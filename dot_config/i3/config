@@ -188,6 +188,30 @@ bindsym $mod+p exec --no-startup-id rofi -show drun
 # Disable mouse hover focus
 focus_follows_mouse no
 
+# Gaps
+# You can also use any non-zero value if you'd like to have a border
+for_window [class=".*"] border pixel 2
+
+gaps inner 6
+gaps outer 6
+
+# Only enable gaps on a workspace when there is at least one container
+smart_gaps on
+
+# Only enable outer gaps when there is exactly one container
+smart_gaps inverse_outer
+
+# Colors
+
+# class                 border  backgr. text    indicator child_border
+client.focused          #1976d2 #285577 #ffffff #2e9ef4   #285577
+client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
+client.unfocused        #333333 #222222 #888888 #292d2e   #222222
+client.urgent           #2f343a #900000 #ffffff #900000   #900000
+client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
+
+client.background       #ffffff
+
 # Background
-exec_always feh --bg-scale ~/Pictures/Wallpapers/Sierra.jpg
-exec xrandr --output DP-2 --auto --left-of DP-1
+exec_always feh --bg-scale ~/Pictures/Wallpaper/001.jpg
+#exec xrandr --output DP-2 --auto --left-of DP-1
