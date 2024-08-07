@@ -1,4 +1,4 @@
-import = ["/Users/ts/.config/alacritty/themes/challenger_deep.yaml"]
+import = ["~/.config/alacritty/themes/challenger_deep.yaml"]
 live_config_reload = true
 
 [window]
