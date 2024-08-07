@@ -1,0 +1,11 @@
+import = ["/Users/ts/.config/alacritty/themes/challenger_deep.yaml"]
+live_config_reload = true
+
+[window]
+option_as_alt = "Both"
+padding = { x = 6, y = 4 }
+startup_mode = "Maximized"
+
+[font]
+size = 16
+
