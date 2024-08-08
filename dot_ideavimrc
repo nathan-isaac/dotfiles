@@ -1,0 +1,39 @@
+#set hlsearch
+set incsearch
+set ignorecase ic
+set number relativenumber
+
+let mapleader = " "
+
+# map <leader>t :action $
+# :actionlist [pattern]
+if has('ide')
+    map <leader>u <Action>(FindUsages)
+    map <leader>s <Action>(FileStructurePopup)
+    map <leader>gd <Action>(GotoDeclaration)
+    map <leader>m <Action>(Move)
+    
+    map <leader>h <Action>(Back)
+    map <leader>l <Action>(Forward)
+
+    map <leader>n <Action>(NewElement)
+    map <leader>gf <Action>(GotoFile)
+    map <leader>gp <Action>(FindInPath)
+    map <leader>b <Action>(Switcher)
+
+    # Run
+    map <leader>T <Action>(RunClass)
+    map <leader>t <Action>(Rerun)
+
+    map <leader>r <Action>(RenameElement)
+    map <leader>R <Action>(RenameFile)
+    
+    map <leader>d <Action>(SafeDelete)
+else
+endif
+
+# https://github.com/JetBrains/ideavim/wiki/Emulated-plugins
+# Plug 'easymotion/vim-easymotion'
+Plug 'preservim/nerdtree'
+Plug 'tpope/vim-surround'
+Plug 'terryma/vim-multiple-cursors'
