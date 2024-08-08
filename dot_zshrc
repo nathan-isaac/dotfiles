@@ -2,6 +2,8 @@ ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 source "${ZINIT_HOME}/zinit.zsh"
 
+export PATH=$PATH:/usr/local/go/bin
+
 EDITOR=nvim
 
 # zsh plugins 
