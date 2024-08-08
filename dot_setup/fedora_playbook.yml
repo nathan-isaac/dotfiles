@@ -1,0 +1,232 @@
+# https://github.com/afroisalreadyinu/fedora-provisioning
+# https://github.com/logandonley/dotfiles
+
+- name: Machine setup
+  hosts: localhost
+  connection: local
+  become_method: sudo
+  become: true
+  gather_facts: true
+
+  vars:
+    toolbox_version: 2.4.1.32573
+
+  tasks:
+    - name: Get my user
+      ansible.builtin.set_fact:
+        remote_regular_user: "{{ ansible_env.SUDO_USER or ansible_user_id }}"
+
+    # Install Sublime Merge
+    - name: Add Sublime Text Repo
+      ansible.builtin.yum_repository:
+        name: sublime-text
+        description: Sublime Text
+        baseurl: https://download.sublimetext.com/rpm/stable/x86_64
+        gpgkey: https://download.sublimetext.com/sublimehq-rpm-pub.gpg
+        gpgcheck: true
+        enabled: true
+
+    - name: Import Sublime Text GPG Key
+      ansible.builtin.rpm_key:
+        key: https://download.sublimetext.com/sublimehq-rpm-pub.gpg
+        state: present
+
+    - name: Install Sublime Text
+      ansible.builtin.dnf:
+        name: sublime-merge
+        state: present
+    
+    # Install Brave
+    - name: Add Brave Browser Repo
+      ansible.builtin.yum_repository:
+        name: brave-browser
+        description: Brave Browser
+        baseurl: https://brave-browser-rpm-release.s3.brave.com/x86_64/
+        gpgkey: https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+        gpgcheck: true
+        enabled: true
+
+    - name: Import Brave Browser GPG Key
+      ansible.builtin.rpm_key:
+        key: https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+        state: present
+
+    - name: Install Brave Browser
+      ansible.builtin.dnf:
+        name: brave-browser
+        state: present
+
+    # Requires Fedora Third Party Packages
+    - name: Install Chrome Browser
+      ansible.builtin.dnf:
+        name: google-chrome-stable
+        state: present
+    
+    - name: Add 1Password repository
+      yum_repository:
+        name: 1Password
+        description: 1Password YUM Repo
+        baseurl: https://downloads.1password.com/linux/rpm/beta/x86_64
+        gpgcheck: yes
+        gpgkey: https://downloads.1password.com/linux/keys/1password.asc
+
+    - name: Install NVIDIA Drivers
+      ansible.builtin.dnf:
+        name: 
+          - akmod-nvidia
+        state: present
+    
+    - name: Install Tools
+      ansible.builtin.dnf:
+        name: 
+          - lm_sensors
+          - alacritty
+          - remmina
+          - 1password
+          - 1password-cli
+          - neovim
+          - zsh
+          - tmux
+          - fzf
+          - ripgrep 
+          - firefox
+          - "@Development Tools"
+          - java-1.8.0-openjdk-devel
+          - eza
+          - unar
+          - zoxide
+          - pnpm
+        state: present
+
+    - name: Change shell to zsh
+      ansible.builtin.user:
+        name: "{{ remote_regular_user }}"
+        shell: /usr/bin/zsh
+    
+    - name: Install DNF plugins core
+      ansible.builtin.dnf:
+        name: dnf-plugins-core
+        state: present
+
+    - name: Install Langs
+      ansible.builtin.dnf:
+        name: 
+          - golang
+        state: latest
+    
+    - name: Install i3
+      ansible.builtin.dnf:
+        name: 
+          - i3-gaps
+          - feh
+          - xrandr
+          - rofi
+        state: present
+    
+    - name: Add Docker repo
+      ansible.builtin.yum_repository:
+        name: docker
+        description: Docker repo
+        baseurl: "https://download.docker.com/linux/fedora/{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/stable"
+        gpgkey: "https://download.docker.com/linux/fedora/gpg"
+        gpgcheck: true
+        enabled: true
+
+    - name: Install Docker
+      ansible.builtin.dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Add Docker group
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Add user to docker group
+      ansible.builtin.user:
+        name: "{{ remote_regular_user }}"
+        groups: docker
+        append: true 
+    
+    - name: Install Flatpak packages
+      community.general.flatpak:
+        name:
+          - com.obsproject.Studio
+          - org.gimp.GIMP
+          - org.gnome.meld
+          - org.signal.Signal
+          - com.spotify.Client
+          - com.logseq.Logseq
+          - md.obsidian.Obsidian
+          - dev.zed.Zed
+        state: present
+
+    - name: Install fonts
+      ansible.builtin.dnf:
+        name: 
+          - jetbrains-mono-fonts-all
+          - ibm-plex-mono-fonts
+          - rsms-inter-fonts
+        state: present
+
+    - name: register status of /tmp/starship-install.sh
+      stat:
+        path: /tmp/starship-install.sh
+      register: starship_path
+    
+    - name: install starship prompt
+      when: "not starship_path.stat.exists"
+      block:
+        - name: Download starship prompt installer
+          ansible.builtin.get_url:
+            url: https://starship.rs/install.sh
+            dest: /tmp/starship-install.sh
+            mode: "0755"
+
+        - name: Install sharship prompt
+          ansible.builtin.command: sh /tmp/starship-install.sh -y
+
+    - name: Create /mnt/data dir
+      ansible.builtin.file:
+        path: /mnt/data
+        state: directory
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+
+- name: User Setup
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    toolbox_version: 2.4.1.32573
+
+  tasks:
+    - name: register status of /home/{{ ansible_user_id }}/.local/share/JetBrains/Toolbox/bin
+      stat:
+        path: /home/{{ ansible_user_id }}/.local/share/JetBrains/Toolbox/bin
+      register: toolbox_path
+
+    - name: install jetbrains toolbox
+      when: "not toolbox_path.stat.exists"
+      block:
+        - name: download toolbox
+          get_url:
+            url: "https://download.jetbrains.com/toolbox/jetbrains-toolbox-{{ toolbox_version }}.tar.gz"
+            dest: /tmp/toolbox.tar.gz
+
+        - name: open toolbox
+          unarchive:
+            src: /tmp/toolbox.tar.gz
+            dest: /tmp
+        
+        - name: install toolbox
+          ansible.builtin.command: /tmp/jetbrains-toolbox-{{ toolbox_version }}/jetbrains-toolbox
+
+
+
