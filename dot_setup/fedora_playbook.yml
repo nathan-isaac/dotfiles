@@ -96,6 +96,7 @@
           - unar
           - zoxide
           - pnpm
+          - flameshot
         state: present
 
     - name: Change shell to zsh

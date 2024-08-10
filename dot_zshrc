@@ -1,3 +1,4 @@
+ZVM_INIT_MODE=sourcing
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 source "${ZINIT_HOME}/zinit.zsh"
@@ -12,10 +13,17 @@ zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
 # https://github.com/Aloxaf/fzf-tab
 zinit light Aloxaf/fzf-tab
+# https://github.com/jeffreytse/zsh-vi-mode
+zinit ice depth=1
+zinit light jeffreytse/zsh-vi-mode
+
 
 # Add in snippets
 # https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins
 # zinit snippet OMZP::git
+
+# Alias
+alias ll="eza -a --long --group --header"
 
 # Load completions
 autoload -U compinit && compinit
@@ -53,5 +61,11 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $real
 # Shell integrations
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
-eval "$(starship init zsh)"
+
+# Check that the function `starship_zle-keymap-select()` is defined.
+# xref: https://github.com/starship/starship/issues/3418
+type starship_zle-keymap-select >/dev/null || \
+  {
+	eval "$(starship init zsh)"
+  }
 
