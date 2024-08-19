@@ -8,9 +8,6 @@
   become: true
   gather_facts: true
 
-  vars:
-    toolbox_version: 2.4.1.32573
-
   tasks:
     - name: Get my user
       ansible.builtin.set_fact:
@@ -91,14 +88,23 @@
           - ripgrep 
           - firefox
           - "@Development Tools"
-          - java-1.8.0-openjdk-devel
+          - java-17-openjdk-devel
+          - java-21-openjdk-devel
           - eza
           - unar
           - zoxide
           - pnpm
           - flameshot
+          - smem
+          # Tauri
+          - webkit2gtk4.0-devel
+          - libappindicator-gtk3-devel
+          - librsvg2-devel
         state: present
 
+    - name: install C Development Tools
+      ansible.builtin.command: dnf group install "C Development Tools and Libraries" -y
+    
     - name: Change shell to zsh
       ansible.builtin.user:
         name: "{{ remote_regular_user }}"
@@ -108,12 +114,12 @@
       ansible.builtin.dnf:
         name: dnf-plugins-core
         state: present
-
-    - name: Install Langs
-      ansible.builtin.dnf:
-        name: 
-          - golang
-        state: latest
+    
+    #- name: Install Langs
+      #  ansible.builtin.dnf:
+        #  name: 
+        #  - golang
+        #state: preset
     
     - name: Install i3
       ansible.builtin.dnf:
@@ -165,6 +171,7 @@
           - com.logseq.Logseq
           - md.obsidian.Obsidian
           - dev.zed.Zed
+          - com.slack.Slack
         state: present
 
     - name: Install fonts
@@ -196,8 +203,8 @@
       ansible.builtin.file:
         path: /mnt/data
         state: directory
-        owner: "{{ ansible_user_id }}"
-        group: "{{ ansible_user_id }}"
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
 
 - name: User Setup
   hosts: localhost
@@ -208,6 +215,23 @@
     toolbox_version: 2.4.1.32573
 
   tasks:
+    - name: register /tmp/turso_install.sh
+      stat:
+        path: /tmp/turso_install.sh
+      register: turso_path
+
+    - name: install turso cli
+      when: "not turso_path.stat.exists"
+      block:
+        - name: download turso installer
+          get_url:
+            url: "https://get.tur.so/install.sh"
+            dest: /tmp/turso_install.sh
+            mode: '0440'
+        
+        - name: install turso
+          ansible.builtin.command: /tmp/turso_install.sh
+    
     - name: register status of /home/{{ ansible_user_id }}/.local/share/JetBrains/Toolbox/bin
       stat:
         path: /home/{{ ansible_user_id }}/.local/share/JetBrains/Toolbox/bin
@@ -229,5 +253,25 @@
         - name: install toolbox
           ansible.builtin.command: /tmp/jetbrains-toolbox-{{ toolbox_version }}/jetbrains-toolbox
 
+    - name: check if cargo is installed
+      shell: command -v cargo
+      register: cargo_exists
+      ignore_errors: yes
+
+    - name: Download Installer
+      when: cargo_exists is failed
+      get_url:
+        url: https://sh.rustup.rs
+        dest: /tmp/sh.rustup.rs
+        mode: '0755'
+        force: 'yes'
+      tags:
+        - rust
+
+    - name: install rust/cargo
+      when: cargo_exists is failed
+      shell: /tmp/sh.rustup.rs -y
+      tags:
+        - rust
 
 

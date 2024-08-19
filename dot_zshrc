@@ -3,7 +3,10 @@ ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 source "${ZINIT_HOME}/zinit.zsh"
 
-export PATH=$PATH:/usr/local/go/bin
+# export GOROOT=$HOME/go
+export PATH=$PATH:$HOME/go/bin:/usr/local/go/bin
+# Turso
+export PATH="$PATH:/home/tony/.turso"
 
 EDITOR=nvim
 
@@ -58,14 +61,17 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $realpath'
 
+[ -f ~/.cargo/env ] && source $HOME/.cargo/env
+
 # Shell integrations
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
+eval "$(starship init zsh)"
 
 # Check that the function `starship_zle-keymap-select()` is defined.
 # xref: https://github.com/starship/starship/issues/3418
-type starship_zle-keymap-select >/dev/null || \
-  {
-	eval "$(starship init zsh)"
-  }
+#type starship_zle-keymap-select >/dev/null || \
+#  {
+#	eval "$(starship init zsh)"
+#  }
 
