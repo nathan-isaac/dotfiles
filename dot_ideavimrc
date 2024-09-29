@@ -12,6 +12,8 @@ if has('ide')
     map <leader>s <Action>(FileStructurePopup)
     map <leader>gd <Action>(GotoDeclaration)
     map <leader>m <Action>(Move)
+
+    # map <leader><tab> <action>(copilot.applyInlays)
     
     map <leader>h <Action>(Back)
     map <leader>l <Action>(Forward)

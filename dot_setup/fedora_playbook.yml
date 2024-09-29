@@ -96,6 +96,8 @@
           - pnpm
           - flameshot
           - smem
+          - ark
+          - qalculate
           # Tauri
           - webkit2gtk4.1-devel
           - openssl-devel
