@@ -98,6 +98,7 @@
           - smem
           - ark
           - qalculate
+          - pavucontrol
           # Tauri
           - webkit2gtk4.1-devel
           - openssl-devel
