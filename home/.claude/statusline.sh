@@ -29,6 +29,18 @@ j() { printf '%s' "$INPUT" | jq -r "$1"; }
 # --- Model ---
 model=$(j '.model.display_name // "unknown"')
 
+# --- Reasoning effort (session value from the JSON when present, else the
+#     saved default from settings: per-model first, then global) ---
+effort=$(j '.effort.level // (.effort | strings) // empty' 2>/dev/null || true)
+if [ -z "$effort" ] && [ -f "$HOME/.claude/settings.json" ]; then
+  model_id=$(j '.model.id // empty')
+  effort=$(jq -r --arg m "$model_id" \
+    '.modelSettings[$m].effortLevel // .effortLevel // empty' \
+    "$HOME/.claude/settings.json" 2>/dev/null || true)
+fi
+effort_str=""
+[ -n "$effort" ] && effort_str=" ${dim}·${reset} ${yellow}${effort}${reset}"
+
 # --- Context usage ---
 input_tokens=$(j '.context_window.total_input_tokens // 0')
 output_tokens=$(j '.context_window.total_output_tokens // 0')
@@ -125,8 +137,8 @@ fi
 
 # --- Output ---
 # Line 1: model, directory, git
-printf "%s%s%s%s |%s %s%s%s%s\n" \
-  "$bold" "$model" "$reset" \
+printf "%s%s%s%s%s |%s %s%s%s%s\n" \
+  "$bold" "$model" "$reset" "$effort_str" \
   "$dim" "$reset" "$bold" "$dir_str" "$reset" "$git_status"
 
 # Line 2: context, cost, rate limits
